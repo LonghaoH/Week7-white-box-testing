@@ -1,10 +1,11 @@
 
-import { NumericKeys } from '../enums';
+import { NumericKeys, OperatorKeys } from '../enums';
 import { ICalculatorState, IContext, IStateData } from '../interfaces';
 import { CalculatorModel } from '../models/calculator.model';
 import { StateData } from '../models/state-data.model';
 import { EnteringFirstNumberState } from './entering-first-number.state';
 import { EnteringSecondNumberState } from './entering-second-number.state';
+import { ErrorState } from './error.state';
 
 describe('states', (): void => {
   describe('EnteringSecondNumberState', (): void => {
@@ -81,11 +82,151 @@ describe('states', (): void => {
     });
 
     describe('binaryOperator()', (): void => {
-      it('should do something');
+      it('should convert to 1+1 to 2+ when the next operator is +', (): void => {
+        
+        enteringSecondNumberState.data.firstBuffer = '1';
+        enteringSecondNumberState.data.firstOperator = OperatorKeys.PLUS;
+        enteringSecondNumberState.data.secondBuffer = '1';
+
+        jest.spyOn(enteringSecondNumberState, 'add').mockReturnValue(2);
+
+        enteringSecondNumberState.binaryOperator(OperatorKeys.PLUS);
+      
+        expect(enteringSecondNumberState.data.firstBuffer).toEqual('2');
+        expect(enteringSecondNumberState.data.firstOperator).toEqual(OperatorKeys.PLUS);
+        expect(enteringSecondNumberState.data.secondBuffer).toEqual('');
+        expect(enteringSecondNumberState.add).toHaveBeenCalledWith(1, 1);
+      });
+
+      it('should convert to 3-1 to 2- when the next operator is -', (): void => {
+        
+        enteringSecondNumberState.data.firstBuffer = '3';
+        enteringSecondNumberState.data.firstOperator = OperatorKeys.MINUS;
+        enteringSecondNumberState.data.secondBuffer = '1';
+
+        jest.spyOn(enteringSecondNumberState, 'subtract').mockReturnValue(2);
+
+        enteringSecondNumberState.binaryOperator(OperatorKeys.MINUS);
+      
+        expect(enteringSecondNumberState.data.firstBuffer).toEqual('2');
+        expect(enteringSecondNumberState.data.firstOperator).toEqual(OperatorKeys.MINUS);
+        expect(enteringSecondNumberState.data.secondBuffer).toEqual('');
+        expect(enteringSecondNumberState.subtract).toHaveBeenCalledWith(3, 1);
+      });
+
+      it('should convert to 2*3 to 6* when the next operator is *', (): void => {
+        
+        enteringSecondNumberState.data.firstBuffer = '2';
+        enteringSecondNumberState.data.firstOperator = OperatorKeys.MULT;
+        enteringSecondNumberState.data.secondBuffer = '3';
+
+        jest.spyOn(enteringSecondNumberState, 'multiply').mockReturnValue(6);
+
+        enteringSecondNumberState.binaryOperator(OperatorKeys.MULT);
+      
+        expect(enteringSecondNumberState.data.firstBuffer).toEqual('6');
+        expect(enteringSecondNumberState.data.firstOperator).toEqual(OperatorKeys.MULT);
+        expect(enteringSecondNumberState.data.secondBuffer).toEqual('');
+        expect(enteringSecondNumberState.multiply).toHaveBeenCalledWith(2, 3);
+      });
+
+      it('should convert to 10/2 to 5/ when the next operator is /', (): void => {
+        
+        enteringSecondNumberState.data.firstBuffer = '10';
+        enteringSecondNumberState.data.firstOperator = OperatorKeys.DIV;
+        enteringSecondNumberState.data.secondBuffer = '2';
+
+        jest.spyOn(enteringSecondNumberState, 'divide').mockReturnValue(5);
+
+        enteringSecondNumberState.binaryOperator(OperatorKeys.DIV);
+      
+        expect(enteringSecondNumberState.data.firstBuffer).toEqual('5');
+        expect(enteringSecondNumberState.data.firstOperator).toEqual(OperatorKeys.DIV);
+        expect(enteringSecondNumberState.data.secondBuffer).toEqual('');
+        expect(enteringSecondNumberState.divide).toHaveBeenCalledWith(10, 2);
+      });
+
+      it('should throw an error when an invalid operator is passed', (): void => {
+        const invalidOperator = 'INVALID_OPERATOR' as OperatorKeys;
+      
+        expect(() => {
+          enteringSecondNumberState.binaryOperator(invalidOperator);
+        }).toThrowError('Invalid Operator');
+      });
     });
 
     describe('equals()', (): void => {
-      it.todo('should do something');
+      it('should stay in the same state', (): void => {
+        jest.spyOn(calculatorModel, "changeState").mockReturnValue(null);
+    
+        enteringSecondNumberState.equals();
+    
+        expect(calculatorModel.changeState).toHaveBeenCalledWith(
+          enteringSecondNumberState
+        );
+      });
+
+      it('should convert to 1+2 to 3 when we call the `equals()` function', (): void => {
+        
+        enteringSecondNumberState.data.firstBuffer = '1';
+        enteringSecondNumberState.data.firstOperator = OperatorKeys.PLUS;
+        enteringSecondNumberState.data.secondBuffer = '2';
+    
+        jest.spyOn(calculatorModel, "changeState").mockReturnValue(null);
+    
+        enteringSecondNumberState.equals();
+    
+        expect(enteringSecondNumberState.data.firstBuffer).toEqual('3');
+        expect(calculatorModel.changeState).toHaveBeenCalledWith(
+          enteringSecondNumberState
+        );
+      });
+
+      it('should convert to 3-1 to 2 when we call the `equals()` function', (): void => {
+        
+        enteringSecondNumberState.data.firstBuffer = '3';
+        enteringSecondNumberState.data.firstOperator = OperatorKeys.MINUS;
+        enteringSecondNumberState.data.secondBuffer = '1';
+    
+        jest.spyOn(calculatorModel, "changeState").mockReturnValue(null);
+    
+        enteringSecondNumberState.equals();
+    
+        expect(enteringSecondNumberState.data.firstBuffer).toEqual('2');
+        expect(calculatorModel.changeState).toHaveBeenCalledWith(
+          enteringSecondNumberState
+        );
+      });
+
+      it('should convert to 2*3 to 6 when we call the `equals()` function', (): void => {
+        
+        enteringSecondNumberState.data.firstBuffer = '2';
+        enteringSecondNumberState.data.firstOperator = OperatorKeys.MULT;
+        enteringSecondNumberState.data.secondBuffer = '3';
+    
+        jest.spyOn(calculatorModel, "changeState").mockReturnValue(null);
+    
+        enteringSecondNumberState.equals();
+    
+        expect(enteringSecondNumberState.data.firstBuffer).toEqual('6');
+        expect(calculatorModel.changeState).toHaveBeenCalledWith(
+          enteringSecondNumberState
+        );
+      });
+
+      it('should convert to 10/2 to 5 when we call the `equals()` function', (): void => {
+        
+        enteringSecondNumberState.data.firstBuffer = '10';
+        enteringSecondNumberState.data.firstOperator = OperatorKeys.DIV;
+        enteringSecondNumberState.data.secondBuffer = '2';
+    
+        jest.spyOn(enteringSecondNumberState, 'divide').mockReturnValue(5);
+    
+        enteringSecondNumberState.equals();
+    
+        expect(enteringSecondNumberState.data.firstBuffer).toEqual('5');
+        expect(enteringSecondNumberState.divide).toHaveBeenCalledWith(10, 2);
+      });
     });
 
     describe('clear()', (): void => {
